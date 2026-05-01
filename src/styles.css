@@ -4,12 +4,12 @@
   --bg-color: #ffffff;
   --text-color: #333333;
   --font-family: 'JetBrains Mono', monospace;
-  --font-size: 18px;
+  --font-size: 30px;
   --line-height: 1.6;
   
-  --editor-padding-x: 40px;
-  --editor-padding-y: 60px;
-  --editor-max-width: 800px;
+  --editor-padding-x: 120px;
+  --editor-padding-y: 100px;
+  --editor-max-width: 1000px;
   
   /* Markdown tokens */
   --md-heading: #111111;
@@ -74,16 +74,12 @@
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-::-webkit-scrollbar-thumb {
-  background: var(--md-bold);
+::-webkit-scrollbar-thumb, .sidebar-pane::-webkit-scrollbar-thumb {
+  background-color: var(--md-bold) !important;
   border-radius: 0;
-  border: 2px solid transparent;
-  background-clip: padding-box;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--md-bold);
-  border: 2px solid transparent;
-  background-clip: padding-box;
+::-webkit-scrollbar-thumb:hover, .sidebar-pane::-webkit-scrollbar-thumb:hover {
+  background-color: var(--md-bold) !important;
 }
 
 /* Hide scrollbar in the editor entirely */

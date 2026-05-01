@@ -173,13 +173,13 @@ const updateListener = EditorView.updateListener.of((update) => {
       try {
         const text = update.state.doc.toString();
         if (text.trim() === "") {
-          if (!["light", "dark", "nord", "solarized"].includes(currentTheme)) {
+          if (!["faerie-light", "faerie-dark", "nord", "solarized"].includes(currentTheme)) {
             const saved = JSON.parse(localStorage.getItem("savedThemes") || "{}");
             delete saved[currentTheme];
             localStorage.setItem("savedThemes", JSON.stringify(saved));
             populateThemeDropdown();
-            currentTheme = "light";
-            applyThemePreview("light");
+            currentTheme = "faerie-light";
+            applyThemePreview("faerie-light");
           }
           document.getElementById("btn-edit-json")?.click();
           return;
@@ -301,6 +301,25 @@ async function saveFile() {
   }
 }
 
+async function saveFileAs() {
+  try {
+    const file = await save({
+      filters: [{ name: "Markdown", extensions: ["md", "markdown", "txt"] }]
+    });
+    if (file) {
+      if (editorView) {
+        const content = editorView.state.doc.toString();
+        await writeTextFile(file, content);
+        currentFilePath = file;
+        updateRecentFiles(file);
+        closeSidebar();
+      }
+    }
+  } catch (error) {
+    console.error("Failed to save file as:", error);
+  }
+}
+
 document.addEventListener("keydown", (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
     e.preventDefault();
@@ -336,7 +355,8 @@ async function setupMacMenu() {
     }, accelerator: "CmdOrCtrl+N" });
     const openItem = await MenuItem.new({ text: "Open...", action: openFile, accelerator: "CmdOrCtrl+O" });
     const saveItem = await MenuItem.new({ text: "Save", action: saveFile, accelerator: "CmdOrCtrl+S" });
-    const fileMenu = await Submenu.new({ text: "File", items: [newItem, openItem, saveItem] });
+    const saveAsItem = await MenuItem.new({ text: "Save As...", action: saveFileAs, accelerator: "Shift+CmdOrCtrl+S" });
+    const fileMenu = await Submenu.new({ text: "File", items: [newItem, openItem, saveItem, saveAsItem] });
     
     const editMenu = await Submenu.new({
       text: "Edit",
@@ -573,14 +593,17 @@ function populateThemeDropdown() {
   if (!options) return;
   const savedThemes = JSON.parse(localStorage.getItem("savedThemes") || "{}");
   let html = `
-    <div data-value="light">Light</div>
-    <div data-value="dark">Dark</div>
+    <div data-value="faerie-light">Faerie Light</div>
+    <div data-value="faerie-dark">Faerie Dark</div>
     <div data-value="nord">Nord</div>
     <div data-value="solarized">Solarized Dark</div>
   `;
-  for (const name of Object.keys(savedThemes)) {
-    html += `<div data-value="${name}">${name}</div>`;
-  }
+  const builtins = ["light", "dark", "nord", "solarized", "faerie-light", "faerie-dark"];
+  Object.keys(savedThemes).forEach(name => {
+    if (!builtins.includes(name)) {
+      html += `<div data-value="${name}">${name}</div>`;
+    }
+  });
   options.innerHTML = html;
 }
 
@@ -907,7 +930,7 @@ function attachSaveThemeListener() {
     const input = document.getElementById("theme-name-input") as HTMLInputElement;
     
     let defaultName = currentTheme;
-    const builtins = ["light", "dark", "nord", "solarized", "faerie-light", "faerie-dark"];
+    const builtins = ["faerie-light", "faerie-dark", "nord", "solarized"];
     if (builtins.includes(currentTheme)) {
       defaultName = `${currentTheme}-custom`;
       const saved = JSON.parse(localStorage.getItem("savedThemes") || "{}");
@@ -985,7 +1008,7 @@ document.getElementById("btn-edit-json")?.addEventListener("click", () => {
       const text = editorView.state.doc.toString();
       const settings = JSON.parse(text);
       if (settings.colors && settings.name) {
-        const builtins = ["light", "dark", "nord", "solarized", "faerie-light", "faerie-dark"];
+        const builtins = ["faerie-light", "faerie-dark", "nord", "solarized"];
         if (!builtins.includes(settings.name)) {
           const saved = JSON.parse(localStorage.getItem("savedThemes") || "{}");
           saved[settings.name] = settings.colors;
