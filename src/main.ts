@@ -486,6 +486,57 @@ function closeSidebar() {
   }, 300);
 }
 
+// iPad / Mobile Detection
+const isIPad = !!navigator.maxTouchPoints && 
+               navigator.maxTouchPoints > 2 && 
+               /MacIntel/.test(navigator.platform);
+const isMobile = isIPad || /iPhone|Android/.test(navigator.userAgent);
+
+if (isMobile) {
+  document.body.classList.add("is-mobile");
+  
+  // Swipe to open logic
+  let touchStartX = 0;
+  edgeTrigger?.addEventListener("touchstart", (e) => {
+    touchStartX = e.touches[0].clientX;
+  });
+  
+  edgeTrigger?.addEventListener("touchmove", (e) => {
+    const deltaX = e.touches[0].clientX - touchStartX;
+    if (deltaX > 20 && !sidebarOpen) {
+      openSidebar();
+    }
+  });
+
+  // Swipe to close logic
+  sidebar?.addEventListener("touchstart", (e) => {
+    touchStartX = e.touches[0].clientX;
+  });
+  sidebar?.addEventListener("touchmove", (e) => {
+    const deltaX = touchStartX - e.touches[0].clientX;
+    if (deltaX > 40 && sidebarOpen && !pinSidebar) {
+      closeSidebar();
+    }
+  });
+
+  // Keyboard dodging
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", () => {
+      const height = window.visualViewport?.height || window.innerHeight;
+      const app = document.getElementById("app-container");
+      if (app) {
+        app.style.height = `${height}px`;
+      }
+    });
+  }
+
+  // Mobile Button Listeners
+  document.getElementById("btn-new-mobile")?.addEventListener("click", () => {
+    new WebviewWindow(`faerie-${Date.now()}`, { url: "index.html", title: "Faerie", x: 80, y: 80 });
+  });
+  document.getElementById("btn-open-mobile")?.addEventListener("click", openFile);
+}
+
 edgeTrigger?.addEventListener("mouseenter", openSidebar);
 
 // Sticky Pin logic

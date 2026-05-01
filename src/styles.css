@@ -306,6 +306,15 @@ body, html {
   padding: 5px;
 }
 .icon-btn:hover { opacity: 1; }
+.header-actions { display: flex; gap: 5px; align-items: center; }
+.mobile-only { display: none !important; }
+.desktop-only { display: flex !important; }
+
+@media (max-width: 1024px), (pointer: coarse) {
+  .mobile-only { display: flex !important; }
+  .desktop-only { display: none !important; }
+}
+
 .pin-btn.active { opacity: 1; color: var(--md-code); }
 .pin-btn.active svg { fill: currentColor; }
 
