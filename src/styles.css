@@ -310,10 +310,14 @@ body, html {
 .mobile-only { display: none !important; }
 .desktop-only { display: flex !important; }
 
+/* Trigger mobile UI if detected via JS or media query */
 @media (max-width: 1024px), (pointer: coarse) {
   .mobile-only { display: flex !important; }
   .desktop-only { display: none !important; }
 }
+
+body.is-mobile .mobile-only { display: flex !important; }
+body.is-mobile .desktop-only { display: none !important; }
 
 .pin-btn.active { opacity: 1; color: var(--md-code); }
 .pin-btn.active svg { fill: currentColor; }

@@ -535,6 +535,7 @@ if (isMobile) {
     new WebviewWindow(`faerie-${Date.now()}`, { url: "index.html", title: "Faerie", x: 80, y: 80 });
   });
   document.getElementById("btn-open-mobile")?.addEventListener("click", openFile);
+  document.getElementById("btn-save-mobile")?.addEventListener("click", saveFile);
 }
 
 edgeTrigger?.addEventListener("mouseenter", openSidebar);
