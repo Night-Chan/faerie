@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Faerie</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <!-- Font Datalist -->
+    <datalist id="google-fonts">
+      <option value="JetBrains Mono"></option>
+      <option value="Inter"></option>
+      <option value="Roboto Mono"></option>
+      <option value="Fira Code"></option>
+      <option value="Source Code Pro"></option>
+      <option value="Inconsolata"></option>
+      <option value="Space Mono"></option>
+      <option value="Merriweather"></option>
+      <option value="Lora"></option>
+      <option value="Open Sans"></option>
+    </datalist>
+
+    <div class="edge-trigger"></div>
+
+    <!-- Hidden Sidebar -->
+    <div id="sidebar" class="sidebar">
+      <div class="sidebar-slider" id="sidebar-slider">
+        
+        <!-- PANE 1: MAIN -->
+        <div class="sidebar-pane" id="pane-main">
+          <div class="sidebar-header fade-target">
+            <div class="logo-area">
+              <h2>Faerie</h2>
+              <button id="btn-pin" class="icon-btn pin-btn" title="Pin Sidebar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 17v5" />
+                  <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+                </svg>
+              </button>
+            </div>
+            <button id="btn-settings" class="icon-btn fade-target">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <rect x="2" y="8" width="4" height="4" />
+                <rect x="8" y="8" width="4" height="4" />
+                <rect x="14" y="8" width="4" height="4" />
+              </svg>
+            </button>
+          </div>
+          
+          <div class="settings-group fade-target" id="file-actions">
+            <h3>File</h3>
+            <button id="btn-open-file" class="sidebar-btn">Open File</button>
+            <button id="btn-save-file" class="sidebar-btn">Save File</button>
+          </div>
+          
+          <div class="settings-group fade-target">
+            <h3>Recent Files</h3>
+            <ul id="recent-files">
+              <li class="empty-state">No recent files</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- PANE 2: SETTINGS -->
+        <div class="sidebar-pane" id="pane-settings">
+          <div class="sidebar-header fade-target">
+            <button id="btn-back-main" class="icon-btn">←</button>
+            <h2>Settings</h2>
+          </div>
+          
+          <div class="settings-group fade-target" id="group-theme">
+            <label>Theme</label>
+            <div class="custom-dropdown" id="theme-dropdown">
+              <div class="dropdown-selected" id="theme-selected">Light</div>
+              <div class="dropdown-options" id="theme-options">
+                <div data-value="light">Light</div>
+                <div data-value="dark">Dark</div>
+                <div data-value="nord">Nord</div>
+                <div data-value="solarized">Solarized Dark</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-group fade-target" id="group-font">
+            <label>Font</label>
+            <div class="custom-dropdown" id="font-dropdown">
+              <div class="dropdown-selected" id="font-selected">JetBrains Mono</div>
+              <div class="dropdown-options" id="font-options">
+                <div data-value="JetBrains Mono">JetBrains Mono</div>
+                <div data-value="Roboto Mono">Roboto Mono</div>
+                <div data-value="Fira Code">Fira Code</div>
+                <div data-value="Source Code Pro">Source Code Pro</div>
+                <div data-value="Inconsolata">Inconsolata</div>
+                <div data-value="Space Mono">Space Mono</div>
+                <div data-value="Inter">Inter</div>
+                <div data-value="Merriweather">Merriweather</div>
+                <div data-value="Lora">Lora</div>
+                <div data-value="Open Sans">Open Sans</div>
+                <div data-value="System" class="boundary-top">System Default</div>
+              </div>
+            </div>
+            <button id="btn-load-local-font" class="sidebar-btn secondary" style="margin-top: 10px;">Load Font File...</button>
+          </div>
+
+          <div class="settings-group fade-target" id="group-pad-x">
+            <label>Horizontal Padding (px)</label>
+            <input type="range" id="padding-x-slider" min="20" max="200" value="60" class="styled-slider" />
+          </div>
+          <div class="settings-group fade-target" id="group-pad-y">
+            <label>Vertical Padding (px)</label>
+            <input type="range" id="padding-y-slider" min="20" max="200" value="60" class="styled-slider" />
+          </div>
+          <div class="settings-group fade-target" id="group-font-size">
+            <label>Font Size (px)</label>
+            <input type="range" id="fontsize-slider" min="12" max="32" value="18" class="styled-slider" />
+          </div>
+          
+          <button id="btn-open-theme-builder" class="sidebar-btn fade-target" style="margin-top: 20px;">Edit Theme</button>
+          <button id="btn-edit-json" class="sidebar-btn secondary fade-target" style="margin-top: 10px;">Edit Settings (JSON)</button>
+        </div>
+
+        <!-- PANE 4: THEME BUILDER -->
+        <div class="sidebar-pane" id="pane-theme">
+          <div class="sidebar-header fade-target">
+            <button id="btn-back-settings-from-theme" class="icon-btn">←</button>
+            <h2 id="theme-builder-title">Edit Theme</h2>
+          </div>
+          
+          <div class="theme-field-list fade-target" id="theme-field-list">
+            <!-- Dynamically populated by JS -->
+          </div>
+          
+          <div id="theme-save-area" class="fade-target" style="margin-top:20px;">
+            <button id="btn-save-custom-theme" class="sidebar-btn">Save Theme</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    
+    <!-- Main Editor Area -->
+    <main id="app-container" class="windowed">
+      <div id="editor-wrapper"></div>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
