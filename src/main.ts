@@ -4,7 +4,8 @@ import { markdown } from "@codemirror/lang-markdown";
 import { syntaxHighlighting, HighlightStyle, syntaxTree } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 import { open, save } from "@tauri-apps/plugin-dialog";
-import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { readTextFile, writeTextFile, mkdir, exists } from "@tauri-apps/plugin-fs";
+import { appLocalDataDir, join, dirname } from "@tauri-apps/api/path";
 import { Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
@@ -116,7 +117,7 @@ const headerAutoSpacer = EditorState.transactionFilter.of(tr => {
       }
 
       // Auto-close syntax characters
-      const closePairs: Record<string, string> = { "*": "*", "_": "_", "`": "`", "[": "]" };
+      const closePairs: Record<string, string> = { "_": "_", "`": "`", "[": "]", "(": ")" };
       if (closePairs[text]) {
         const closeChar = closePairs[text];
         // Skip-over: if the char after cursor is already the closing char
@@ -177,6 +178,7 @@ const updateListener = EditorView.updateListener.of((update) => {
             const saved = JSON.parse(localStorage.getItem("savedThemes") || "{}");
             delete saved[currentTheme];
             localStorage.setItem("savedThemes", JSON.stringify(saved));
+            syncThemesToFile();
             populateThemeDropdown();
             currentTheme = "faerie-light";
             applyThemePreview("faerie-light");
@@ -249,6 +251,62 @@ if (editorWrapper) {
 
   // Show splash only on initial launch
   showSplashOverlay();
+  
+  // Initialize File-based storage
+  initFileStorage();
+}
+
+let baseDir = "";
+async function initFileStorage() {
+  try {
+    baseDir = await appLocalDataDir();
+    console.log("FAERIE DATA DIR:", baseDir);
+    if (!(await exists(baseDir))) {
+      await mkdir(baseDir, { recursive: true });
+    }
+    
+    // Load themes
+    const themesPath = await join(baseDir, "themes.json");
+    if (await exists(themesPath)) {
+      const themesData = await readTextFile(themesPath);
+      localStorage.setItem("savedThemes", themesData);
+      populateThemeDropdown();
+    }
+    
+    // Load recent files from recent-files.md
+    const recentPath = await join(baseDir, "recent-files.md");
+    if (await exists(recentPath)) {
+      const recentData = await readTextFile(recentPath);
+      // Expecting lines like: - [path](file://path)
+      const lines = recentData.split("\n");
+      const paths = lines
+        .filter(l => l.startsWith("- "))
+        .map(l => {
+          const match = l.match(/\((.*?)\)/);
+          return match ? match[1].replace("file://", "") : null;
+        })
+        .filter(p => p !== null);
+      localStorage.setItem("recentFiles", JSON.stringify(paths));
+      renderRecentFiles();
+    }
+  } catch (e) {
+    console.error("Failed to init file storage:", e);
+  }
+}
+
+async function syncThemesToFile() {
+  if (!baseDir) return;
+  const themesPath = await join(baseDir, "themes.json");
+  const themesData = localStorage.getItem("savedThemes") || "{}";
+  await writeTextFile(themesPath, themesData);
+}
+
+async function syncRecentFilesToFile() {
+  if (!baseDir) return;
+  const recentPath = await join(baseDir, "recent-files.md");
+  const paths = JSON.parse(localStorage.getItem("recentFiles") || "[]");
+  const markdown = "# Recent Files\n\n" + paths.map((p: string) => `- [${p}](file://${p})`).join("\n");
+  await writeTextFile(recentPath, markdown);
 }
 
 // File Operations Logic
@@ -279,12 +337,21 @@ async function saveFile() {
   try {
     let pathToSave = currentFilePath;
     if (!pathToSave) {
+      const content = editorView.state.doc.toString();
+      const firstWordMatch = content.match(/[a-zA-Z0-9]+/);
+      const firstWord = firstWordMatch ? firstWordMatch[0] : "";
+      const defaultFileName = firstWord ? `${firstWord.toLowerCase()}.md` : "untitled.md";
+      const lastDir = localStorage.getItem("lastSaveDir");
+      
       const file = await save({
+        defaultPath: lastDir ? await join(lastDir, defaultFileName) : defaultFileName,
         filters: [{ name: "Markdown", extensions: ["md", "markdown", "txt"] }]
       });
+      
       if (file) {
         pathToSave = file;
         currentFilePath = file;
+        localStorage.setItem("lastSaveDir", await dirname(file));
       } else {
         return;
       }
@@ -303,14 +370,23 @@ async function saveFile() {
 
 async function saveFileAs() {
   try {
+    const content = editorView.state.doc.toString();
+    const firstWordMatch = content.match(/[a-zA-Z0-9]+/);
+    const firstWord = firstWordMatch ? firstWordMatch[0] : "";
+    const defaultFileName = firstWord ? `${firstWord.toLowerCase()}.md` : "untitled.md";
+    const lastDir = currentFilePath ? await dirname(currentFilePath) : localStorage.getItem("lastSaveDir");
+
     const file = await save({
+      defaultPath: lastDir ? await join(lastDir, defaultFileName) : defaultFileName,
       filters: [{ name: "Markdown", extensions: ["md", "markdown", "txt"] }]
     });
+    
     if (file) {
       if (editorView) {
         const content = editorView.state.doc.toString();
         await writeTextFile(file, content);
         currentFilePath = file;
+        localStorage.setItem("lastSaveDir", await dirname(file));
         updateRecentFiles(file);
         closeSidebar();
       }
@@ -529,7 +605,10 @@ function applyThemePreview(val: string) {
   document.documentElement.style.setProperty("--editor-padding-x", `${padX}px`);
   document.documentElement.style.setProperty("--editor-padding-y", `${padY}px`);
   document.documentElement.style.setProperty("--font-size", `${fs}px`);
-  if (fontFam) document.documentElement.style.setProperty("--font-family", fontFam);
+  if (fontFam) {
+    document.documentElement.style.setProperty("--font-family", fontFam);
+    // Note: We don't update --sidebar-font-family here to avoid jitter during preview
+  }
 }
 function revertThemePreview() { applyThemePreview(currentTheme); }
 
@@ -618,6 +697,13 @@ setupDropdown("theme-dropdown", "theme-selected", "theme-options",
   }
 );
 
+// Sync sidebar font on initial load
+const savedFont = localStorage.getItem("userFontFamily");
+if (savedFont) {
+  document.documentElement.style.setProperty("--font-family", savedFont);
+  document.documentElement.style.setProperty("--sidebar-font-family", savedFont);
+}
+
 let currentFont = "JetBrains Mono";
 function applyFontPreview(val: string) {
   if (val === "System") {
@@ -637,7 +723,12 @@ function applyFontPreview(val: string) {
 }
 setupDropdown("font-dropdown", "font-selected", "font-options", 
   (val) => { applyFontPreview(val); },
-  (val) => { currentFont = val; applyFontPreview(val); }
+  (val) => { 
+    currentFont = val; 
+    applyFontPreview(val); 
+    document.documentElement.style.setProperty("--sidebar-font-family", `'${val}', monospace`);
+    localStorage.setItem("userFontFamily", `'${val}', monospace`);
+  }
 );
 
 // Layout sliders (with selective fade hooks)
@@ -687,6 +778,7 @@ function updateRecentFiles(path: string) {
   recents.unshift(path);
   if (recents.length > 5) recents.pop();
   localStorage.setItem("recentFiles", JSON.stringify(recents));
+  syncRecentFilesToFile();
   renderRecentFiles();
 }
 
@@ -951,6 +1043,7 @@ function attachSaveThemeListener() {
         const finalName = input.value.trim() || defaultName;
         saved[finalName] = { ...customVars };
         localStorage.setItem("savedThemes", JSON.stringify(saved));
+        syncThemesToFile();
         
         populateThemeDropdown();
         const sel = document.getElementById("theme-selected");
@@ -1013,6 +1106,7 @@ document.getElementById("btn-edit-json")?.addEventListener("click", () => {
           const saved = JSON.parse(localStorage.getItem("savedThemes") || "{}");
           saved[settings.name] = settings.colors;
           localStorage.setItem("savedThemes", JSON.stringify(saved));
+          syncThemesToFile();
           populateThemeDropdown();
           currentTheme = settings.name;
           const sel = document.getElementById("theme-selected");
@@ -1056,6 +1150,7 @@ document.getElementById("btn-edit-json")?.addEventListener("click", () => {
   saved["faerie-light"] = faerieLightColors;
   saved["faerie-dark"] = faerieDarkColors;
   localStorage.setItem("savedThemes", JSON.stringify(saved));
+  syncThemesToFile();
   populateThemeDropdown();
 
   // On first launch (no theme preference saved), auto-detect

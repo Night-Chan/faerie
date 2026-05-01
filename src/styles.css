@@ -4,6 +4,7 @@
   --bg-color: #ffffff;
   --text-color: #333333;
   --font-family: 'JetBrains Mono', monospace;
+  --sidebar-font-family: 'JetBrains Mono', monospace;
   --font-size: 30px;
   --line-height: 1.6;
   
@@ -136,6 +137,7 @@ body, html {
   padding-top: var(--editor-padding-y) !important;
   padding-bottom: var(--editor-padding-y) !important;
   caret-color: var(--text-color) !important;
+  font-family: var(--font-family) !important;
 }
 
 .cm-line {
@@ -224,6 +226,7 @@ body, html {
   height: 100%;
   background-color: var(--sidebar-bg);
   color: var(--sidebar-text);
+  font-family: var(--sidebar-font-family) !important;
   border-right: 1px solid var(--sidebar-border);
   z-index: 1000;
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
