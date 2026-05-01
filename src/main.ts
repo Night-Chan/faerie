@@ -230,7 +230,11 @@ if (editorWrapper) {
   const startState = EditorState.create({
     doc: "",
     extensions: [
-      markdown(),
+      markdown({
+        extensions: [{
+          remove: ["SetextHeading"]
+        }]
+      }),
       syntaxHighlighting(faerieHighlightStyle),
       faerieMarkdownStyler,
       headerAutoSpacer,
@@ -254,6 +258,19 @@ if (editorWrapper) {
   
   // Initialize File-based storage
   initFileStorage();
+
+  // Universal Header Listeners
+  document.getElementById("btn-new-mobile")?.addEventListener("click", () => {
+    new WebviewWindow(`faerie-${Date.now()}`, { url: "index.html", title: "Faerie", x: 80, y: 80 });
+  });
+  document.getElementById("btn-open-mobile")?.addEventListener("click", openFile);
+  document.getElementById("btn-save-mobile")?.addEventListener("click", saveFile);
+  
+  document.getElementById("btn-clear-history")?.addEventListener("click", () => {
+    localStorage.setItem("recentFiles", "[]");
+    renderRecentFiles();
+    syncRecentFilesToFile();
+  });
 }
 
 let baseDir = "";
@@ -334,6 +351,7 @@ async function openFile() {
 }
 
 async function saveFile() {
+  if (!editorView) return;
   try {
     let pathToSave = currentFilePath;
     if (!pathToSave) {
@@ -369,6 +387,7 @@ async function saveFile() {
 }
 
 async function saveFileAs() {
+  if (!editorView) return;
   try {
     const content = editorView.state.doc.toString();
     const firstWordMatch = content.match(/[a-zA-Z0-9]+/);
@@ -498,11 +517,11 @@ if (isMobile) {
   // Swipe to open logic
   let touchStartX = 0;
   edgeTrigger?.addEventListener("touchstart", (e) => {
-    touchStartX = e.touches[0].clientX;
+    touchStartX = (e as TouchEvent).touches[0].clientX;
   });
   
   edgeTrigger?.addEventListener("touchmove", (e) => {
-    const deltaX = e.touches[0].clientX - touchStartX;
+    const deltaX = (e as TouchEvent).touches[0].clientX - touchStartX;
     if (deltaX > 20 && !sidebarOpen) {
       openSidebar();
     }
@@ -510,32 +529,17 @@ if (isMobile) {
 
   // Swipe to close logic
   sidebar?.addEventListener("touchstart", (e) => {
-    touchStartX = e.touches[0].clientX;
+    touchStartX = (e as TouchEvent).touches[0].clientX;
   });
   sidebar?.addEventListener("touchmove", (e) => {
-    const deltaX = touchStartX - e.touches[0].clientX;
+    const deltaX = touchStartX - (e as TouchEvent).touches[0].clientX;
     if (deltaX > 40 && sidebarOpen && !pinSidebar) {
       closeSidebar();
     }
   });
 
-  // Keyboard dodging
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener("resize", () => {
-      const height = window.visualViewport?.height || window.innerHeight;
-      const app = document.getElementById("app-container");
-      if (app) {
-        app.style.height = `${height}px`;
-      }
-    });
-  }
-
-  // Mobile Button Listeners
-  document.getElementById("btn-new-mobile")?.addEventListener("click", () => {
-    new WebviewWindow(`faerie-${Date.now()}`, { url: "index.html", title: "Faerie", x: 80, y: 80 });
-  });
-  document.getElementById("btn-open-mobile")?.addEventListener("click", openFile);
-  document.getElementById("btn-save-mobile")?.addEventListener("click", saveFile);
+  // iPadOS handles viewport resizing natively when the keyboard appears.
+  // Manual height adjustment removed to prevent blank areas.
 }
 
 edgeTrigger?.addEventListener("mouseenter", openSidebar);
@@ -824,6 +828,12 @@ document.getElementById("btn-load-local-font")?.addEventListener("click", async 
 });
 
 // Recent Files
+document.getElementById("btn-clear-history")?.addEventListener("click", () => {
+  localStorage.removeItem("recentFiles");
+  syncRecentFilesToFile();
+  renderRecentFiles();
+});
+
 function updateRecentFiles(path: string) {
   let recents = JSON.parse(localStorage.getItem("recentFiles") || "[]") as string[];
   recents = recents.filter(p => p !== path);

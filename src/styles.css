@@ -138,6 +138,7 @@ body, html {
   padding-bottom: var(--editor-padding-y) !important;
   caret-color: var(--text-color) !important;
   font-family: var(--font-family) !important;
+  min-width: 200px !important;
 }
 
 .cm-line {
@@ -185,10 +186,10 @@ body, html {
 
 /* Markdown styling */
 .cm-heading { color: var(--md-heading); font-weight: 700; }
-.cm-heading1 { font-size: 2.2em; margin-top: 1em; margin-bottom: 0.5em; }
-.cm-heading2 { font-size: 1.8em; margin-top: 1em; margin-bottom: 0.5em; }
-.cm-heading3 { font-size: 1.5em; margin-top: 1em; margin-bottom: 0.5em; }
-.cm-heading4 { font-size: 1.2em; margin-top: 1em; margin-bottom: 0.5em; }
+.cm-heading1 { font-size: 1.8em; margin-top: 0.3em; margin-bottom: 0.1em; }
+.cm-heading2 { font-size: 1.5em; margin-top: 0.3em; margin-bottom: 0.1em; }
+.cm-heading3 { font-size: 1.3em; margin-top: 0.2em; margin-bottom: 0.1em; }
+.cm-heading4 { font-size: 1.1em; margin-top: 0.2em; margin-bottom: 0.1em; }
 .cm-strong { color: var(--md-bold); font-weight: bold; }
 .cm-em { color: var(--md-italic); font-style: italic; }
 .cm-link { color: var(--md-code); text-decoration: none; font-style: italic; }
@@ -321,6 +322,36 @@ body.is-mobile .desktop-only { display: none !important; }
 
 .pin-btn.active { opacity: 1; color: var(--md-code); }
 .pin-btn.active svg { fill: currentColor; }
+
+.clear-btn {
+  position: absolute;
+  bottom: 25px;
+  left: 25px;
+  opacity: 0.3;
+  z-index: 1100;
+  color: var(--sidebar-text);
+  transition: opacity 0.2s, color 0.2s;
+}
+.clear-btn:hover {
+  opacity: 1;
+  color: var(--md-bold);
+}
+
+.sidebar.intersect-fade .clear-btn {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.context-menu {
+  position: fixed;
+  background: var(--sidebar-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 4px;
+  padding: 5px 0;
+  z-index: 2000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-width: 150px;
+}
 
 .settings-group { margin-bottom: 20px; }
 .settings-group label, .settings-group h3 {
