@@ -68,19 +68,11 @@
   padding: 0;
 }
 
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+* {
+  scrollbar-width: none;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb, .sidebar-pane::-webkit-scrollbar-thumb {
-  background-color: var(--md-bold) !important;
-  border-radius: 0;
-}
-::-webkit-scrollbar-thumb:hover, .sidebar-pane::-webkit-scrollbar-thumb:hover {
-  background-color: var(--md-bold) !important;
+*::-webkit-scrollbar {
+  display: none;
 }
 
 /* Hide scrollbar in the editor entirely */
@@ -342,6 +334,12 @@ body.is-mobile .desktop-only { display: none !important; }
   pointer-events: none;
 }
 
+#sidebar-slider.show-settings ~ .clear-btn,
+#sidebar-slider.show-theme ~ .clear-btn,
+#sidebar-slider.show-font ~ .clear-btn {
+  display: none;
+}
+
 .context-menu {
   position: fixed;
   background: var(--sidebar-bg);
@@ -410,10 +408,13 @@ input[type=range].styled-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   height: 16px;
   width: 16px;
-  background: var(--md-bold);
+  background-color: var(--md-bold);
   cursor: pointer;
   margin-top: -6px;
   border-radius: 0;
+  border: none;
+  box-shadow: none;
+  opacity: 1;
 }
 input[type=range].styled-slider::-webkit-slider-runnable-track {
   width: 100%;
@@ -455,7 +456,9 @@ input[type=range].styled-slider::-webkit-slider-runnable-track {
   z-index: 10;
   max-height: 200px;
   overflow-y: auto;
+  scrollbar-width: none;
 }
+.dropdown-options::-webkit-scrollbar { display: none; }
 .custom-dropdown.open .dropdown-options { display: block; }
 .dropdown-options div {
   padding: 10px;
