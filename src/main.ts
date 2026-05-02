@@ -36,9 +36,8 @@ function showSplashOverlay() {
   splash.className = "faerie-splash-overlay";
   splash.innerHTML = `
     <p>hey!</p>
-    <h1><span class="faerie-syntax-mark">#</span> Welcome to Faerie!</h1>
-    <p><span class="faerie-syntax-mark">_</span><span class="faerie-under-em">lightweight, distraction free markdown editor</span><span class="faerie-syntax-mark">_</span></p>
-    <p><span class="faerie-syntax-mark">*</span><span class="faerie-ast-em">start typing...</span><span class="faerie-syntax-mark">*</span></p>
+    <h2><span class="faerie-syntax-mark">##</span> Welcome to Faerie</h2>
+    <p><span class="faerie-syntax-mark">_</span><span class="faerie-under-em">start typing...</span><span class="faerie-syntax-mark">_</span></p>
   `;
   wrapper.appendChild(splash);
   const dismiss = () => {
@@ -261,7 +260,7 @@ if (editorWrapper) {
 
   // Universal Header Listeners
   document.getElementById("btn-new-mobile")?.addEventListener("click", () => {
-    new WebviewWindow(`faerie-${Date.now()}`, { url: "index.html", title: "Faerie", x: 80, y: 80 });
+    new WebviewWindow(`faerie-${Date.now()}`, { url: "index.html", title: "Faerie", x: 80, y: 80, decorations: false });
   });
   document.getElementById("btn-open-mobile")?.addEventListener("click", openFile);
   document.getElementById("btn-save-mobile")?.addEventListener("click", saveFile);
@@ -426,7 +425,7 @@ document.addEventListener("keydown", (e) => {
   }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "n") {
     e.preventDefault();
-    new WebviewWindow(`faerie-${Date.now()}`, { url: "index.html", title: "Faerie", x: 80, y: 80 });
+    new WebviewWindow(`faerie-${Date.now()}`, { url: "index.html", title: "Faerie", x: 80, y: 80, decorations: false });
   }
 });
 
@@ -446,7 +445,7 @@ if (isMac) {
 async function setupMacMenu() {
   try {
     const newItem = await MenuItem.new({ text: "New Window", action: () => {
-      new WebviewWindow(`faerie-${Date.now()}`, { url: "index.html", title: "Faerie", x: 80, y: 80 });
+      new WebviewWindow(`faerie-${Date.now()}`, { url: "index.html", title: "Faerie", x: 80, y: 80, decorations: false });
     }, accelerator: "CmdOrCtrl+N" });
     const openItem = await MenuItem.new({ text: "Open...", action: openFile, accelerator: "CmdOrCtrl+O" });
     const saveItem = await MenuItem.new({ text: "Save", action: saveFile, accelerator: "CmdOrCtrl+S" });
